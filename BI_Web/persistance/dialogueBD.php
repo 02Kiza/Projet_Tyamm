@@ -102,6 +102,56 @@ class DialogueBD
             return $e->getMessage();
         }
     }
+
+    public static function getMontantsClients() {
+        $conn = Connexion::getConnexion();
+        $sql = "SELECT c.NomClient AS client, DATE_FORMAT(lf.mois, '%Y-%m') AS mois, SUM(lf.prix) AS montant 
+              FROM ligne_facturation lf
+              JOIN clients c ON c.CentreActiviteID = lf.CentreActiviteID
+              JOIN grandclients gc ON c.GrandClientID = gc.GrandClientID
+              WHERE lf.mois BETWEEN '2021-01-01' AND '2022-04-30' 
+              GROUP BY c.NomClient, mois 
+              ORDER BY montant DESC 
+              LIMIT 5";
+        $sth = $conn->prepare($sql);
+        $sth->execute();
+        return $sth->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function getEvolutionGrandClient()
+    {
+        try {
+            $conn = Connexion::getConnexion();;
+            $sql = "SELECT c.NomClient, DATE_FORMAT(lf.mois, '%Y-%m') AS mois, SUM(lf.prix) /100 AS montant_total
+                FROM ligne_facturation lf
+                JOIN clients c ON lf.CentreActiviteID = c.CentreActiviteID
+                WHERE lf.mois BETWEEN '2021-01-01' AND '2022-04-30'
+                GROUP BY c.NomClient, mois
+                HAVING c.NomClient IN (
+                    SELECT NomClient FROM (
+                        SELECT c.NomClient, SUM(lf.prix) AS total
+                        FROM ligne_facturation lf
+                        JOIN clients c ON lf.CentreActiviteID = c.CentreActiviteID
+                        GROUP BY c.NomClient
+                        ORDER BY total DESC
+                        LIMIT 5
+                    ) AS top_clients
+                )
+                ORDER BY mois, montant_total DESC
+            ";
+
+
+            $sth = $conn->prepare($sql);
+            $sth->execute();
+
+
+            return $sth->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return $e->getMessage();
+        }
+    }
+
+
 }
 
 

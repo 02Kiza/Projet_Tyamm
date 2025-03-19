@@ -8,6 +8,7 @@ $grandClients = DialogueBD::getAllGrandClients();
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <link rel ="stylesheet" href="design.css" />
     <title>Top 10 des Applications</title>
 </head>
 <body>
@@ -35,5 +36,7 @@ foreach ($grandClients as $client) {
     echo "</ul>";
 }
 ?>
+
+<p style="text-align: center"><a href ="Accueil.php">Accueil</a></p>
 </body>
 </html>
